@@ -14,6 +14,8 @@ import cv2
 import terminal_inputs
 import keelson
 from keelson.payloads.Image_pb2 import RawImage
+from keelson.payloads.PointCloud_pb2 import PointCloud
+from keelson.payloads.PackedElementField_pb2 import PackedElementField
 
 def main():
 
@@ -79,7 +81,7 @@ def main():
         priority=zenoh.Priority.INTERACTIVE_HIGH(),
         congestion_control=zenoh.CongestionControl.DROP(),
     )
-    logging.info(f"Publisher for image at {key_image_color}")
+    logging.info(f"Publisher for image at {publisher_image_depth}")
 
 
 
@@ -112,7 +114,8 @@ def main():
 
             # Convert images to numpy arrays
             depth_image = np.asanyarray(depth_frame.get_data())
-            logging.debug("Depth image shape: %s", depth_image)
+            # logging.debug("Depth image shape: %s", depth_image.shape)
+
 
             color_image = np.asanyarray(color_frame.get_data())
 
@@ -121,7 +124,7 @@ def main():
                 cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET
             )
 
-            buffer.append((depth_colormap, color_image, ingress_timestamp))
+            buffer.append((depth_colormap, color_image, depth_frame, ingress_timestamp))
     
     # Start capture thread
     t = Thread(target=capture_frames)
@@ -134,7 +137,7 @@ def main():
 
         while True:
             try:
-                depth_colormap, color_image, ingress_timestamp = buffer.pop()
+                depth_colormap, color_image, depth_frame, ingress_timestamp = buffer.pop()
             except IndexError:
                 time.sleep(0.01)
                 continue
@@ -186,6 +189,55 @@ def main():
                 envelope = keelson.enclose(serialized_payload)
                 publisher_image_depth.put(envelope)
                 logging.debug(f"...published on {key_image_depth}")
+
+            if "point_cloud" in args.publish:
+                logging.debug("Send POINT CLOUD frame...")
+
+                payload = PointCloud()
+                payload.timestamp.FromNanoseconds(ingress_timestamp)
+                if args.frame_id is not None:
+                    payload.frame_id = args.frame_id
+
+
+                # Zero relative position
+                payload.pose.position.x = 0
+                payload.pose.position.y = 0
+                payload.pose.position.z = 0
+
+                # Identity quaternion
+                payload.pose.orientation.x = 0
+                payload.pose.orientation.y = 0
+                payload.pose.orientation.z = 0
+                payload.pose.orientation.w = 1
+
+                # Fields
+                payload.fields.add(name="x", offset=0, type=PackedElementField.FLOAT64)
+                payload.fields.add(name="y", offset=8, type=PackedElementField.FLOAT64)
+                payload.fields.add(name="z", offset=16, type=PackedElementField.FLOAT64)
+
+                # Generate point cloud
+                pc = rs.pointcloud()
+                points = pc.calculate(depth_frame)
+                logging.debug("Point cloud calculated %s", points)
+                vtx = np.asanyarray(points.get_vertices())
+                logging.debug(f"Point cloud shape: {vtx.shape} " )
+                logging.debug("Point cloud: %s", vtx)
+
+                # Ensure the point cloud data is in float64 format
+                vtx_float64 = np.zeros(vtx.shape, dtype=[('x', np.float64), ('y', np.float64), ('z', np.float64)])
+                vtx_float64['x'] = vtx['f0'].astype(np.float64)
+                vtx_float64['y'] = vtx['f1'].astype(np.float64)
+                vtx_float64['z'] = vtx['f2'].astype(np.float64)
+
+                data = vtx_float64.tobytes()
+                payload.point_stride = len(data) // len(vtx_float64)  # 3 fields (x, y, z) each of 8 bytes (float64)
+                payload.data = data
+
+
+                serialized_payload = payload.SerializeToString()
+                envelope = keelson.enclose(serialized_payload)
+                publisher_point_cloud.put(envelope)
+                logging.debug(f"...published on {key_point_cloud}")
 
 
 
