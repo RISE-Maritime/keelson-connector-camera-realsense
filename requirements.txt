@@ -1,3 +1,4 @@
-keelson==0.3.8rc21
+keelson==0.3.9rc22
+eclipse-zenoh>=1.2.1
 pyrealsense2==2.55.1.6486
 opencv-python==4.10.0.84

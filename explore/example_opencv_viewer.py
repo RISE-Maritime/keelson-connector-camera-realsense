@@ -18,15 +18,6 @@ pipeline_wrapper = rs.pipeline_wrapper(pipeline)
 pipeline_profile = config.resolve(pipeline_wrapper)
 device = pipeline_profile.get_device()
 
-print(str(device.get_info(rs.camera_info.name)))
-print(str(device.get_info(rs.camera_info.serial_number)))
-print(str(device.get_info(rs.camera_info.product_line)))
-print(str(device.get_info(rs.camera_info.firmware_version)))
-print(str(device.get_info(rs.camera_info.physical_port)))
-print(str(device.get_info(rs.camera_info.product_id)))
-print(str(device.get_info(rs.camera_info.debug_op_code)))
-print(str(device.get_info(rs.camera_info.advanced_mode)))
-
 
 device_product_line = str(device.get_info(rs.camera_info.product_line))
 

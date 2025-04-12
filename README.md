@@ -5,7 +5,7 @@ Connector based on https://www.intelrealsense.com/sdk-2/
 ## Quick start
 
 ```bash 
-python3 bin/main.py --log-level 10 -r rise -e test -s camera/0
+python3 bin/main.py --log-level 10 -r rise -e test -s camera/0 --publish raw
 
 ```
 
