@@ -29,8 +29,8 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/rise-maritime/keelson-connector-camera-relsease:latest
-            ghcr.io/rise-maritime/keelson-connector-camera-relsease:${{ github.event.release.tag_name }}
+            ghcr.io/rise-maritime/keelson-connector-camera-realsense:latest
+            ghcr.io/rise-maritime/keelson-connector-camera-realsense:${{ github.event.release.tag_name }}
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
