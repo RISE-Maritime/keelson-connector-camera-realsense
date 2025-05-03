@@ -13,9 +13,9 @@ import cv2
 
 import terminal_inputs
 import keelson
-from keelson.payloads.Image_pb2 import RawImage
-from keelson.payloads.PointCloud_pb2 import PointCloud
-from keelson.payloads.PackedElementField_pb2 import PackedElementField
+from keelson.payloads.foxglove.RawImage_pb2 import RawImage
+from keelson.payloads.foxglove.PointCloud_pb2 import PointCloud
+from keelson.payloads.foxglove.PackedElementField_pb2 import PackedElementField
 
 def main():
 
@@ -37,7 +37,6 @@ def main():
 
     with zenoh.open(conf) as session:
   
-
         def _on_exit():
             session.close()
 
@@ -46,7 +45,7 @@ def main():
 
         # PUBLSIHERS
         key_point_cloud = keelson.construct_pubsub_key(
-            realm=args.realm,
+            base_path=args.realm,
             entity_id=args.entity_id,
             subject="point_cloud",
             source_id=args.source_id,
@@ -58,7 +57,7 @@ def main():
 
 
         key_image_color = keelson.construct_pubsub_key(
-            realm=args.realm,
+            base_path=args.realm,
             entity_id=args.entity_id,
             subject="raw_image",
             source_id=args.source_id + "/color",
@@ -69,7 +68,7 @@ def main():
         logging.info(f"Publisher for image at {key_image_color}")
 
         key_image_depth = keelson.construct_pubsub_key(
-            realm=args.realm,
+            base_path=args.realm,
             entity_id=args.entity_id,
             subject="raw_image",
             source_id=args.source_id + "/depth",
@@ -129,14 +128,19 @@ def main():
 
 
         try:
-            previous = time.time()
-
+          
+            
+          
             while True:
                 try:
                     depth_colormap, color_image, depth_frame, ingress_timestamp = buffer.pop()
                 except IndexError:
                     time.sleep(0.01)
                     continue
+                except Exception as e:
+                    logging.error("Error while popping from buffer: %s", e)
+                    continue
+
 
                 logging.debug("Processing raw frame")
 
