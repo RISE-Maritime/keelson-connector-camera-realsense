@@ -59,7 +59,7 @@ def main():
         key_image_color = keelson.construct_pubsub_key(
             base_path=args.realm,
             entity_id=args.entity_id,
-            subject="raw_image",
+            subject="image_raw",
             source_id=args.source_id + "/color",
         )
         publisher_image_color = session.declare_publisher(
@@ -70,7 +70,7 @@ def main():
         key_image_depth = keelson.construct_pubsub_key(
             base_path=args.realm,
             entity_id=args.entity_id,
-            subject="raw_image",
+            subject="image_raw",
             source_id=args.source_id + "/depth",
         )
         publisher_image_depth = session.declare_publisher(
