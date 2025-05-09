@@ -51,7 +51,8 @@ def main():
             source_id=args.source_id,
         )
         publisher_point_cloud = session.declare_publisher(
-            key_point_cloud
+            key_point_cloud,
+            congestion_control=zenoh.CongestionControl.BLOCK
         )
         logging.info(f"Publisher for point cloud at {key_point_cloud}")
 
@@ -63,7 +64,8 @@ def main():
             source_id=args.source_id + "/color",
         )
         publisher_image_color = session.declare_publisher(
-            key_image_color
+            key_image_color,
+            congestion_control=zenoh.CongestionControl.BLOCK
         )
         logging.info(f"Publisher for image at {key_image_color}")
 
@@ -74,7 +76,8 @@ def main():
             source_id=args.source_id + "/depth",
         )
         publisher_image_depth = session.declare_publisher(
-            key_image_depth
+            key_image_depth,
+            congestion_control=zenoh.CongestionControl.BLOCK
         )
         logging.info(f"Publisher for image at {publisher_image_depth}")
 
