@@ -61,6 +61,13 @@ def terminal_inputs():
         help="publish message type"
     )
 
+    parser.add_argument(
+        "--frame_rate",
+        type=int,
+        default=30,
+        help="Frame rate for publishing messages, default 30",
+    )
+
   
   
     ## Parse arguments and start doing our thing
