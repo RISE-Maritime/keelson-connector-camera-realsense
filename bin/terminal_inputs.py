@@ -65,7 +65,9 @@ def terminal_inputs():
         "--frame_rate",
         type=int,
         default=30,
-        help="Frame rate for publishing messages, default 30",
+        choices=[6, 15, 30, 60, 90],  # Common RealSense frame rates
+        help="Frame rate for publishing messages (6, 15, 30, 60, 90 fps), default 30",
+
     )
 
   

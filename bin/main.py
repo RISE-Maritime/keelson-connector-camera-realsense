@@ -83,7 +83,7 @@ def main():
 
 
 
-        buffer = deque(maxlen=1)
+        buffer = deque(maxlen=10)  # Larger buffer to hold frames between 1Hz publications
         close_down = Event()
 
         def capture_frames():
@@ -131,12 +131,26 @@ def main():
 
 
         try:
-          
+            last_publish_time = 0
+            publish_interval = 1.0  # 1 second for 1Hz
             
-          
             while True:
+                current_time = time.time()
+                
+                # Check if it's time to publish (1Hz)
+                if current_time - last_publish_time < publish_interval:
+                    time.sleep(0.01)
+                    continue
+                
                 try:
+                    # Get the latest frame from buffer (clear buffer and get the most recent)
+                    if len(buffer) == 0:
+                        time.sleep(0.01)
+                        continue
+                    
+                    # Get the most recent frame and clear the buffer
                     depth_colormap, color_image, depth_frame, ingress_timestamp = buffer.pop()
+                    buffer.clear()  # Clear remaining older frames
                 except IndexError:
                     time.sleep(0.01)
                     continue
@@ -144,8 +158,8 @@ def main():
                     logging.error("Error while popping from buffer: %s", e)
                     continue
 
-
-                logging.debug("Processing raw frame")
+                last_publish_time = current_time
+                logging.debug("Processing raw frame at 1Hz")
 
                 height_dep, width_dep, _ = depth_colormap.shape
                 data_dep = depth_colormap.tobytes()
